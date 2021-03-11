@@ -1,0 +1,57 @@
+function [x, H] = create_AR_proc_evolutif(poles_tab, var, ech)
+
+PLOT_FFT = 0;
+PLOT_DSP = 0;
+PAS_FIXE = 1;
+PLOT_SPECTROGRAM = 1
+
+
+pas_evolution = 1000; % en ech
+inter_var = [-0.05 0.05]; % en radian
+modules = abs(poles_tab)
+ordre_p = length(poles_tab); % p poles
+
+for i=1:(ech/pas_evolution) % iterations pour construire chaque signal par tranche de pas_evolution
+
+
+    memory = zeros(ordre_p, 1);
+
+    angles = angle(poles_tab);
+    pas_aleatoires = inter_var(1)+(inter_var(2)-inter_var(1)).*rand(1, ordre_p);
+
+    angles = angles+pas_aleatoires;
+    
+    u = randn(ech, 1)*sqrt(var);
+
+    % Nos poles sont des racines de polynomes
+    H = poly(poles_tab)
+    % ((les coefs de notre polynome correspondent aux ai))
+
+    % conv() ca va faire un Filtre RIF, nous on veut
+    % un RII, on veut un filtre de 1/mes_coefs, pas un filtre mes_coefs
+    
+    if exist('x','var')
+        x = [x ; filter(1, H, u)]; 
+    else
+        x = filter(1, H, u);
+    end
+end
+
+if(PLOT_FFT)
+
+    figure;
+    X = fft(x);
+
+    plot(abs(X).^2)
+%         plot(-fech/2:(fech/2)-1, fftshift(X));
+    hold on
+end
+if(PLOT_DSP)
+%         dsp = ech*abs(fft(H,ech)).^2*var;
+    dsp = periodogram(x);
+    plot(dsp);
+    hold off
+end
+    
+    
+end
